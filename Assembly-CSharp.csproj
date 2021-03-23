@@ -67,15 +67,19 @@
     <Compile Include="Assets\Scripts\Network\Support\SendToForm.cs" />
     <Compile Include="Assets\Scripts\Network\Support\Supports.cs" />
     <Compile Include="Assets\Scripts\Network\Support\sendMail.cs" />
-    <Compile Include="Assets\Scripts\UI\loadingScene.cs" />
+    <Compile Include="Assets\Scripts\UI\TabButton.cs" />
+    <Compile Include="Assets\Scripts\UI\TabGroup.cs" />
+    <Compile Include="Assets\Scripts\UI\lang.cs" />
     <Compile Include="Assets\Scripts\UI\pageSwiper.cs" />
     <Compile Include="Assets\Scripts\UI\rangProgress.cs" />
+    <Compile Include="Assets\Scripts\loadingScene.cs" />
     <Compile Include="Assets\plugin\Simple Scroll-Snap\Examples\Example 1 (macOS Finder)\Scripts\FileSelected.cs" />
     <Compile Include="Assets\plugin\Simple Scroll-Snap\Examples\Example 3 (Slot Machine)\Scripts\SlotMachine.cs" />
     <Compile Include="Assets\plugin\Simple Scroll-Snap\Examples\Example 5 (Dynamic Content)\Scripts\DynamicContentController.cs" />
     <Compile Include="Assets\plugin\Simple Scroll-Snap\Examples\Example 6 (3D Shape Selection)\Scripts\Rotator.cs" />
     <Compile Include="Assets\plugin\Simple Scroll-Snap\Examples\Shared Resources\Scripts\ExpandInformation.cs" />
     <Compile Include="Assets\plugin\Simple Scroll-Snap\Scripts\Runtime\SimpleScrollSnap.cs" />
+    <None Include="Assets\plugin\Lean\READ ME.txt" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/2019.4.11f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
@@ -628,9 +632,6 @@
     <Reference Include="Unity.2D.SpriteShape.Editor">
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.2D.SpriteShape.Editor.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.2D.Path.Editor">
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.2D.Path.Editor.dll</HintPath>
     </Reference>
@@ -682,9 +683,6 @@
     <Reference Include="Unity.Mathematics.Editor">
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.Mathematics.Editor.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.2D.Common.Editor">
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.2D.Common.Editor.dll</HintPath>
     </Reference>
@@ -695,7 +693,16 @@
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="LeanLocalization.csproj">
+      <Project>{C6C8B189-3882-02B1-1ED9-4D3E326CF060}</Project>
+      <Name>LeanLocalization</Name>
+    </ProjectReference>
+    <ProjectReference Include="LeanCommon.csproj">
+      <Project>{9511BEF9-38B4-D7D4-5AC5-7E1FF0A44919}</Project>
+      <Name>LeanCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

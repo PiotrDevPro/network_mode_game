@@ -649,9 +649,6 @@
     <Reference Include="Unity.2D.SpriteShape.Editor">
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.2D.SpriteShape.Editor.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.2D.Path.Editor">
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.2D.Path.Editor.dll</HintPath>
     </Reference>
@@ -703,9 +700,6 @@
     <Reference Include="Unity.Mathematics.Editor">
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.Mathematics.Editor.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.2D.Common.Editor">
       <HintPath>C:/Users/vanya/unity_projects/Mafia_proj/Library/ScriptAssemblies/Unity.2D.Common.Editor.dll</HintPath>
     </Reference>
@@ -720,6 +714,14 @@
     <ProjectReference Include="Assembly-CSharp.csproj">
       <Project>{CC589DE8-4322-47EC-9ED5-270F2F9DDE82}</Project>
       <Name>Assembly-CSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="LeanLocalization.csproj">
+      <Project>{C6C8B189-3882-02B1-1ED9-4D3E326CF060}</Project>
+      <Name>LeanLocalization</Name>
+    </ProjectReference>
+    <ProjectReference Include="LeanCommon.csproj">
+      <Project>{9511BEF9-38B4-D7D4-5AC5-7E1FF0A44919}</Project>
+      <Name>LeanCommon</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

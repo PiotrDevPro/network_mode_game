@@ -8,6 +8,10 @@ public class MainMenuManager : MonoBehaviour
     [Header("Менюшки")]
     public GameObject _play;
     public GameObject _options;
+    public GameObject _friends;
+    public GameObject _mainmenu;
+    public GameObject _rules;
+    public GameObject _scrollPanel;
     [Header("Настройка")]
     public GameObject _support;
     public Toggle musicOnOff;
@@ -20,7 +24,6 @@ public class MainMenuManager : MonoBehaviour
     void Start()
     {
         //AudioListener.pause = (PlayerPrefs.GetInt("Sound") == 1) ? true : false;
-
     }
 
     void Update()
@@ -46,6 +49,29 @@ public class MainMenuManager : MonoBehaviour
         _options.SetActive(false);
     }
 
+    public void Friends()
+    {
+        _friends.SetActive(true);
+        _scrollPanel.GetComponentInChildren<ScrollRect>().enabled = false;
+    }
+
+    public void MainMenu()
+    {
+        _friends.SetActive(false);
+        _mainmenu.SetActive(true);
+        _scrollPanel.GetComponentInChildren<ScrollRect>().enabled = true;
+    }
+
+    public void Rules()
+    {
+        _rules.SetActive(true);
+    }
+
+    public void RulesExit()
+    {
+        _rules.SetActive(false);
+    }
+
     #endregion
 
     #region Settings
@@ -53,11 +79,13 @@ public class MainMenuManager : MonoBehaviour
     public void Support()
     {
         _support.SetActive(true);
+        _options.SetActive(false);
     }
 
     public void SupportQuit()
     {
         _support.SetActive(false);
+        _options.SetActive(true);
     }
 
     public void policy()
