@@ -2,22 +2,33 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
 
 public class MainMenuManager : MonoBehaviour
 {
+    public static MainMenuManager manage; //singleton
     [Header("Менюшки")]
     public GameObject _play;
     public GameObject _options;
     public GameObject _friends;
     public GameObject _mainmenu;
+    public GameObject _createroom;
     public GameObject _rules;
     public GameObject _scrollPanel;
     [Header("Настройка")]
     public GameObject _support;
     public Toggle musicOnOff;
+    public Image playerNumList;
+    public Text maxPlayersLabel;
+    public Text currPlayersLabel;
+    [Header("Булевые переменные")]
+    public bool isCreateRoomPanelOpen = false;
+    public bool isPlayLobbyOpen = false;
 
     void Awake()
     {
+        manage = this;
         musicOnOff.isOn = (PlayerPrefs.GetInt("Sound") == 0) ? true : false;
     }
 
@@ -47,6 +58,18 @@ public class MainMenuManager : MonoBehaviour
     public void OptionsQuit()
     {
         _options.SetActive(false);
+    }
+
+    public void CreateRoomPanell()
+    {
+        _createroom.SetActive(true);
+        isCreateRoomPanelOpen = true;
+    }
+
+    public void CreateRoomPanellQuit()
+    {
+        _createroom.SetActive(false);
+        isCreateRoomPanelOpen = false;
     }
 
     public void Friends()
@@ -106,6 +129,12 @@ public class MainMenuManager : MonoBehaviour
             AudioListener.pause = true;
         }
     }
+
+    #endregion
+
+    #region Network 
+
+
 
     #endregion
 
