@@ -10,10 +10,11 @@ using ExitGames.Client.Photon;
 public class PhotonConnector : MonoBehaviourPunCallbacks
 {
     public static PhotonConnector manage;
-    private RoomInfo roomInfo;
     [Header("Меню")]
     public Button Play;
+    public Button CreateRoom;
     public GameObject CurrentRoomActive;
+    public GameObject loginPanel;
     [Header("Элементы")]
     public Slider maxPlayers;
     public Slider rangPlayers;
@@ -23,9 +24,17 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     [Header("Созданная комната")]
     public Text rangCurrentRoom;
     public Text nameCurrentRoom;
+    public int rangNumbers;
+    public Text currPlayersInRoom;
+    public Text maxPlayersInRoom;
+    [SerializeField] Transform roomListContent;
+    [SerializeField] GameObject roomListItemPrefab;
+    [SerializeField] Transform playersListContent;
+    [SerializeField] GameObject playersListItemPrefab;
     [Header("Булевые переменные")]
     public bool isRoomCreated = false;
     public bool isConected = false;
+
     
 
     private void Update()
@@ -42,29 +51,35 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     private void Awake()
     {
         manage = this;
-        PhotonNetwork.NickName = PlayerPrefs.GetString("Nickname");
+        if (PlayerPrefs.GetInt("FirstActive") == 0)
+        {
+            PhotonNetwork.NickName = "Player " + Random.Range(10, 9999);
+            PlayerPrefs.SetString("Nickname", PhotonNetwork.NickName);
+        }
+        
     }
     #region Unity Method
     private void Start()
     {
         
         
-      // if (PlayerPrefs.GetInt("FirstActive")==0)
-      //  {
-            //PhotonNetwork.NickName = "Player" + Random.Range(10, 9999);
-            //PlayerPrefs.SetString("Nickname", PhotonNetwork.NickName);
+       //if (PlayerPrefs.GetInt("FirstActive")==0)
+       // {
+            //loginPanel.SetActive(true);
        // }
-
+        //else
+        //{
+            PlayFabLogin.manage.username = PlayerPrefs.GetString("Nickname");
+            PlayFabLogin.manage.Login();
+        //}
         
-        //PlayerPrefs.SetInt("FirstActive", PlayerPrefs.GetInt("FirstActive") + 1);
-        
-        
+        PlayerPrefs.SetInt("FirstActive", PlayerPrefs.GetInt("FirstActive") + 1);
+        PhotonNetwork.NickName = PlayerPrefs.GetString("Nickname");
         Debug.Log("Connect to photon as :" + PhotonNetwork.NickName);
         PhotonNetwork.AuthValues = new AuthenticationValues(PhotonNetwork.NickName);
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.GameVersion = "0.1";
         PhotonNetwork.ConnectUsingSettings();
-        print(PlayerPrefs.GetInt("FirstActive"));
         print(PhotonNetwork.NickName);
         maxPlayers.maxValue = 21;
         maxPlayers.minValue = 2;
@@ -76,6 +91,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     {
         Debug.Log("ConnectedToMaster");
         Play.interactable = true;
+        CreateRoom.interactable = true;
         isConected = true;
         if (!PhotonNetwork.InLobby)
         {
@@ -93,15 +109,15 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
             roomName.text = "Room" + Random.Range(1, 1000);
         }
         maxPlayers.minValue = 0;
-
         RoomOptions ro = new RoomOptions();
         ro.IsOpen = true;
         ro.IsVisible = true;
         ro.MaxPlayers = (byte)maxPlayers.value;
-
         Hashtable RoomCustomProps = new Hashtable();
         RoomCustomProps.Add("RANG", (int)rangPlayers.value);
+        RoomCustomProps.Add("MAXP", (int)maxPlayers.value);
         ro.CustomRoomProperties = RoomCustomProps;
+        
         PhotonNetwork.JoinOrCreateRoom(roomName.text, ro, TypedLobby.Default);
     }
    
@@ -109,32 +125,61 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
 
     #region Public Method
 
-    
+    public void LeftRoom()
+    {
+        PhotonNetwork.LeaveRoom();
+    }
+
+    public void JoinRoom(RoomInfo info)
+    {
+        PhotonNetwork.JoinRoom(info.Name);
+
+    }
+
 
     public override void OnJoinedLobby()
     {
         Debug.Log("You have connected to a Photon Lobby");
-       // CreatePhotonRoom("Lobby");
     }
 
     public override void OnCreatedRoom()
     {
         Debug.Log("Created Room success name: " + PhotonNetwork.CurrentRoom.Name);
-        MainMenuManager.manage.isCreateRoomPanelOpen = false;
-        MainMenuManager.manage._createroom.SetActive(false);
-        CurrentRoomActive.SetActive(true);
-        rangCurrentRoom.text = PhotonNetwork.CurrentRoom.CustomProperties["RANG"].ToString();
-        nameCurrentRoom.text = roomName.text;
+        
     }
 
     public override void OnJoinedRoom()
     {
         Debug.Log("Join to room name: " + PhotonNetwork.CurrentRoom.Name);
+        MainMenuManager.manage.isCreateRoomPanelOpen = false;
+        MainMenuManager.manage._createroom.SetActive(false);
+        ChatController.manage.Connect();
+        CurrentRoomActive.SetActive(true);
+        rangCurrentRoom.text = PhotonNetwork.CurrentRoom.CustomProperties["RANG"].ToString();
+        nameCurrentRoom.text = PhotonNetwork.CurrentRoom.Name.ToString();
+        maxPlayersInRoom.text = PhotonNetwork.CurrentRoom.CustomProperties["MAXP"].ToString();
+        Player[] playerz = PhotonNetwork.PlayerList;
+        foreach (Transform child in playersListContent)
+        {
+            Destroy(child.gameObject);
+        }
+
+
+        for (int i = 0; i < playerz.Length; i++)
+        {
+            Instantiate(playersListItemPrefab, playersListContent).GetComponent<PlayersItem>().SetUp(playerz[i]);
+            currPlayersInRoom.text = playerz.Length.ToString();
+            
+        }
     }
 
     public override void OnLeftRoom()
     {
         Debug.Log("You have left a room");
+        
+        
+        playerMenu.manage.closePlayerPanel();
+        CurrentRoomActive.SetActive(false);
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
@@ -145,17 +190,36 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
     {
         Debug.Log(PhotonNetwork.CurrentRoom.CustomProperties["RANG"].ToString());
+        
+    }
+
+    public override void OnRoomListUpdate(List<RoomInfo> roomList)
+    {
+        foreach (Transform trans in roomListContent)
+        {
+            Destroy(trans.gameObject);
+        }
+        for (int i =0; i < roomList.Count; i++)
+        {
+            if (roomList[i].RemovedFromList)
+                continue;
+            Instantiate(roomListItemPrefab, roomListContent).GetComponent<RoomListing>().SetRoomInfo(roomList[i]);
+            
+        }
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         Debug.Log("Another player has joined room" + newPlayer.UserId);
-        //PlayerPrefs.SetInt("currplayers", PhotonNetwork.PlayerList.Length);
+        Instantiate(playersListItemPrefab, playersListContent).GetComponent<PlayersItem>().SetUp(newPlayer);
+        currPlayersInRoom.text = PhotonNetwork.PlayerList.Length.ToString();
+
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Debug.Log("Another player has joined room" + otherPlayer.UserId);
+        
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)

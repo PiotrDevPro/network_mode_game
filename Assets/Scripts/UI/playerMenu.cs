@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class playerMenu : MonoBehaviour
 {
+    public static playerMenu manage;
     [SerializeField]
     private Button Open;
     [SerializeField]
@@ -12,6 +13,12 @@ public class playerMenu : MonoBehaviour
     [SerializeField]
     private Button Quit;
 
+
+
+    private void Awake()
+    {
+        manage = this;
+    }
 
     public void openPlayerMenu()
     {

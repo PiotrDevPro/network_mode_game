@@ -16,6 +16,8 @@ public class MainMenuManager : MonoBehaviour
     public GameObject _createroom;
     public GameObject _rules;
     public GameObject _scrollPanel;
+    public GameObject _currentRoom_main;
+    public GameObject _currentRoom_question;
     [Header("Настройка")]
     public GameObject _support;
     public Toggle musicOnOff;
@@ -83,6 +85,18 @@ public class MainMenuManager : MonoBehaviour
         _friends.SetActive(false);
         _mainmenu.SetActive(true);
         _scrollPanel.GetComponentInChildren<ScrollRect>().enabled = true;
+    }
+
+    public void CurrentRoomChat()
+    {
+        _currentRoom_main.SetActive(true);
+        _currentRoom_question.SetActive(false);
+    }
+
+    public void CurrentRoomQuestion()
+    {
+        _currentRoom_main.SetActive(false);
+        _currentRoom_question.SetActive(true);
     }
 
     public void Rules()
