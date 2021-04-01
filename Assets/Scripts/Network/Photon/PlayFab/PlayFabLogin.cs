@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
 using PlayFab;
 using PlayFab.ClientModels;
 using System;
@@ -11,14 +13,15 @@ public class PlayFabLogin : MonoBehaviour
     private void Awake()
     {
         manage = this;
-    }
-
-    private void Start()
-    {
         if (string.IsNullOrEmpty(PlayFabSettings.TitleId))
         {
             PlayFabSettings.TitleId = "5225C";
         }
+    }
+
+    private void Start()
+    {
+        
     }
 
     public void SetUserName(string name)
@@ -39,6 +42,13 @@ public class PlayFabLogin : MonoBehaviour
         if (!IsValidUserName()) return;
 
         LoginWithCustomId();
+        if (MainMenuManager.manage.isProfileOpened)
+        {
+            MainMenuManager.manage._loginEdit.SetActive(false);
+            MainMenuManager.manage.namePlayerlabel.text = PlayerPrefs.GetString("Nickname");
+
+        }
+        
     }
 
     private bool IsValidUserName()

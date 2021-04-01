@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
+using System;
 using Photon.Pun;
 using Photon.Realtime;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
@@ -10,6 +11,7 @@ using ExitGames.Client.Photon;
 public class PhotonConnector : MonoBehaviourPunCallbacks
 {
     public static PhotonConnector manage;
+    
     [Header("Меню")]
     public Button Play;
     public Button CreateRoom;
@@ -53,7 +55,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         manage = this;
         if (PlayerPrefs.GetInt("FirstActive") == 0)
         {
-            PhotonNetwork.NickName = "Player " + Random.Range(10, 9999);
+            PhotonNetwork.NickName = "Player " + UnityEngine.Random.Range(10, 9999);
             PlayerPrefs.SetString("Nickname", PhotonNetwork.NickName);
         }
         
@@ -61,18 +63,14 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     #region Unity Method
     private void Start()
     {
-        
-        
-       //if (PlayerPrefs.GetInt("FirstActive")==0)
-       // {
-            //loginPanel.SetActive(true);
-       // }
-        //else
-        //{
-            PlayFabLogin.manage.username = PlayerPrefs.GetString("Nickname");
-            PlayFabLogin.manage.Login();
-        //}
-        
+        OnMasterConnect();
+
+    }
+
+    public void OnMasterConnect()
+    {
+        PlayFabLogin.manage.username = PlayerPrefs.GetString("Nickname");
+
         PlayerPrefs.SetInt("FirstActive", PlayerPrefs.GetInt("FirstActive") + 1);
         PhotonNetwork.NickName = PlayerPrefs.GetString("Nickname");
         Debug.Log("Connect to photon as :" + PhotonNetwork.NickName);
@@ -80,6 +78,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.GameVersion = "0.1";
         PhotonNetwork.ConnectUsingSettings();
+        PlayFabLogin.manage.Login();
         print(PhotonNetwork.NickName);
         maxPlayers.maxValue = 21;
         maxPlayers.minValue = 2;
@@ -106,7 +105,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
             return;
         if (roomName.text == "")
         {
-            roomName.text = "Room" + Random.Range(1, 1000);
+            roomName.text = "Room" + UnityEngine.Random.Range(1, 1000);
         }
         maxPlayers.minValue = 0;
         RoomOptions ro = new RoomOptions();
@@ -140,6 +139,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public override void OnJoinedLobby()
     {
         Debug.Log("You have connected to a Photon Lobby");
+        
     }
 
     public override void OnCreatedRoom()

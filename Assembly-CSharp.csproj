@@ -78,8 +78,12 @@
     <Compile Include="Assets\Photon\PhotonLibs\WebSocket\WebSocket.cs" />
     <Compile Include="Assets\Photon\PhotonRealtime\Demos\DemoLoadBalancing\ConnectAndJoinRandomLb.cs" />
     <Compile Include="Assets\Scripts\MainMenuManager.cs" />
-    <Compile Include="Assets\Scripts\Network\MenuManager.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\ChatController.cs" />
+    <Compile Include="Assets\Scripts\Network\Photon\Friends\PhotonFriendsController.cs" />
+    <Compile Include="Assets\Scripts\Network\Photon\Friends\PlayfabFriendController.cs" />
+    <Compile Include="Assets\Scripts\Network\Photon\Friends\UIAddFriends.cs" />
+    <Compile Include="Assets\Scripts\Network\Photon\Friends\UIDisplayFriends.cs" />
+    <Compile Include="Assets\Scripts\Network\Photon\Friends\UIFriend.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\PhotonConnector.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\PlayFab\PlayFabLogin.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\Players\PlayersItem.cs" />

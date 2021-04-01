@@ -7,8 +7,8 @@ using Photon.Realtime;
 
 public class PlayersItem : MonoBehaviourPunCallbacks
 {
-    [SerializeField] Text nickName; 
-    Player player;
+    [SerializeField] TMPro.TextMeshProUGUI nickName; 
+    public Player player;
     public void SetUp(Player _player)
     {
         player = _player;
