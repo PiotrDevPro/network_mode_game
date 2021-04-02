@@ -83,6 +83,7 @@
     <Compile Include="Assets\Scripts\Network\Photon\Friends\PlayfabFriendController.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\Friends\UIAddFriends.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\Friends\UIDisplayFriends.cs" />
+    <Compile Include="Assets\Scripts\Network\Photon\Friends\UIDisplayInvates.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\Friends\UIFriend.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\PhotonConnector.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\PlayFab\PlayFabLogin.cs" />

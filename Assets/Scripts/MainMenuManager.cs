@@ -22,6 +22,8 @@ public class MainMenuManager : MonoBehaviour
     public GameObject _currentRoom_question;
     public GameObject _profile;
     public GameObject _loginEdit;
+    public GameObject RUSure;
+    public GameObject InviteFriendsPanel;
     [Header("Настройка")]
     public GameObject _support;
     public Toggle musicOnOff;
@@ -33,6 +35,7 @@ public class MainMenuManager : MonoBehaviour
     public bool isCreateRoomPanelOpen = false;
     public bool isPlayLobbyOpen = false;
     public bool isProfileOpened = false;
+    public bool isDeleteFiles = false;
 
     void Awake()
     {
@@ -91,6 +94,16 @@ public class MainMenuManager : MonoBehaviour
         _scrollPanel.GetComponentInChildren<ScrollRect>().enabled = false;
     }
 
+    public void InviteFriendsOpen()
+    {
+        InviteFriendsPanel.SetActive(true);
+    }
+
+    public void InviteFriendsClose()
+    {
+        InviteFriendsPanel.SetActive(false);
+    }
+
     public void MainMenu()
     {
         PlayfabFriendController.manage.PlayfabFriendControllerOnExit();
@@ -139,6 +152,17 @@ public class MainMenuManager : MonoBehaviour
     public void Edit()
     {
         _loginEdit.SetActive(true);
+    }
+
+    public void DeleteIsOk()
+    {
+        UIFriend.manage.RemoveFriends();
+    }
+
+    public void DeleteIsCancel()
+    {
+        RUSure.SetActive(false);
+        isDeleteFiles = false;
     }
 
     #endregion
