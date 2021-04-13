@@ -11,12 +11,15 @@ using ExitGames.Client.Photon;
 public class PhotonConnector : MonoBehaviourPunCallbacks
 {
     public static PhotonConnector manage;
-    
+    public Player Player { get; private set; }
+    private ExitGames.Client.Photon.Hashtable playerCustomProperties = new ExitGames.Client.Photon.Hashtable();
     [Header("Меню")]
     public Button Play;
     public Button CreateRoom;
     public GameObject CurrentRoomActive;
     public GameObject loginPanel;
+    public GameObject invatesPanel;
+    public GameObject PlayRoom;
     [Header("Элементы")]
     public Slider maxPlayers;
     public Slider rangPlayers;
@@ -29,24 +32,96 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public int rangNumbers;
     public Text currPlayersInRoom;
     public Text maxPlayersInRoom;
+    public Text Counter;
+    public Text gameCounter;
+    private float curr = 0;
+    private float starttime = 20f;// 20
+
+    [Header("Элементы Гэймплэя")]
     [SerializeField] Transform roomListContent;
     [SerializeField] GameObject roomListItemPrefab;
     [SerializeField] Transform playersListContent;
     [SerializeField] GameObject playersListItemPrefab;
-    [Header("Булевые переменные")]
-    public bool isRoomCreated = false;
+    [SerializeField] GameObject PlayersListForVote;
+    [SerializeField] Transform GameContent;
+    [SerializeField] GameObject dayPrefimg;
+    [SerializeField] GameObject nightPrefimg;
+    [SerializeField] GameObject mafiaTimetoKillPref;
+    
+    [SerializeField] GameObject dayImg;
+    [SerializeField] GameObject nightImg;
+    [SerializeField] GameObject voteImg;
+
+    [SerializeField] GameObject mafPref;
+    [SerializeField] GameObject mirPref;
+    [SerializeField] Transform mafConteiner;
+    [SerializeField] Transform mirContainer;
+    
+
+
+
+    [Header("Булевые переменные GAMEPLAY")]
+    public bool isTimeStart = false;
+    public bool isStartGame = false;
+    public bool isDayStart = false;
+    public bool isDayEnd = false;
+    public bool isNightStart = false;
+    public bool isNightEnd = false;
+    public bool isMafiaTimeToKill = false;
+    public bool isMafiaTimeToKillEnd = false;
+
+    [Header("Булевые переменные КОМНАТА")]
+    public bool isNotEnougPlayersInRoom = false;
+    public bool isRoomCreatedAndJoined = false;
+    public bool isLastPlayerConnected = false;
     public bool isConected = false;
 
-    
+    RoomInfo info;
 
     private void Update()
     {
+        print(isTimeStart);
         //PlayerPrefs.DeleteAll();
         if (MainMenuManager.manage.isCreateRoomPanelOpen)
         {
             maxPlayerNum.text = ((int)maxPlayers.value).ToString();
             rangNum.text = ((int)rangPlayers.value).ToString();
         }
+
+        #region GamePlay
+        if (isRoomCreatedAndJoined && isTimeStart)
+        {
+            Timer();
+            Counter.text = "Игра начнется через " + curr.ToString("0");
+        }
+        else if (isRoomCreatedAndJoined && !isTimeStart || isNotEnougPlayersInRoom)
+        {
+            Counter.text = "Идет набор";
+        }
+        if (isLastPlayerConnected)
+        {
+            
+            Timer();
+            Counter.text = "Игра начнется через " + curr.ToString("0");
+        }
+        if (isStartGame)
+        {
+            Counter.text = "";
+            if (!isNotEnougPlayersInRoom)
+            {
+                Timer();
+                gameCounter.text = curr.ToString("0");
+                
+                if (isNightStart && !isDayStart)
+                {
+                    gameCounter.text = curr.ToString("0");
+                    
+                }
+            }
+            
+        }
+
+        #endregion
 
     }
 
@@ -64,7 +139,9 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     private void Start()
     {
         OnMasterConnect();
-
+        PlayerPrefs.SetInt("ischatconnected", 0);
+        curr = starttime;
+        isStartGame = false;
     }
 
     public void OnMasterConnect()
@@ -108,6 +185,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
             roomName.text = "Room" + UnityEngine.Random.Range(1, 1000);
         }
         maxPlayers.minValue = 0;
+        curr = starttime;
         RoomOptions ro = new RoomOptions();
         ro.IsOpen = true;
         ro.IsVisible = true;
@@ -116,7 +194,6 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         RoomCustomProps.Add("RANG", (int)rangPlayers.value);
         RoomCustomProps.Add("MAXP", (int)maxPlayers.value);
         ro.CustomRoomProperties = RoomCustomProps;
-        
         PhotonNetwork.JoinOrCreateRoom(roomName.text, ro, TypedLobby.Default);
     }
    
@@ -127,6 +204,13 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public void LeftRoom()
     {
         PhotonNetwork.LeaveRoom();
+        isLastPlayerConnected = false;
+        isRoomCreatedAndJoined = false;
+        isNightStart = false;
+        isStartGame = false;
+        isTimeStart = false;
+        curr = 20;
+        PlayRoom.SetActive(false);
     }
 
     public void JoinRoom(RoomInfo info)
@@ -135,11 +219,134 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
 
     }
 
+    public void TimerWhenReady(RoomInfo info)
+    {
+      if  (info.MaxPlayers == info.MaxPlayers)
+        {
+            isTimeStart = true;
+        }
+    }
+
+    #region Game
+
+    void Day()
+    {
+        if (isStartGame)
+        {
+            dayImg.SetActive(true);
+            nightImg.SetActive(false);
+            
+            if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+            {
+                Instantiate(mafPref, mafConteiner);
+                Instantiate(mirPref, mirContainer);
+
+            }
+            if (PhotonNetwork.CurrentRoom.PlayerCount == 3)
+            {
+                Instantiate(mafPref, mafConteiner);
+                Instantiate(mafPref, mafConteiner);
+                Instantiate(mirPref, mirContainer);
+            }
+            isDayStart = true;
+            curr = 1; // 60
+            print(PhotonNetwork.CurrentRoom.PlayerCount);
+        }
+    }
+
+    void Night()
+    {
+            isDayStart = false;
+            isDayEnd = true;
+            isNightStart = true;
+            dayImg.SetActive(false);
+            nightImg.SetActive(true);
+            gameCounter.color = Color.cyan;
+            curr = 2; // 25
+            print("Night");
+    }
+
+    void TimeTokill()
+    {
+        isNightStart = false;
+        isNightEnd = true;
+        isMafiaTimeToKill = true;
+        gameCounter.color = Color.red;
+        voteImg.SetActive(true);
+        dayImg.SetActive(false);
+        nightImg.SetActive(false);
+        curr = 2; // 15
+        print("MafiaTimeToKill");
+    }
+
+    void Timer()
+    {
+
+        curr -= 1 * Time.deltaTime;
+        if (curr <= 0 && !isStartGame)
+        {
+
+            curr = 0; 
+            isLastPlayerConnected = false;
+            isTimeStart = false;
+            isRoomCreatedAndJoined = false;
+            isStartGame = true;
+            PlayRoom.SetActive(true);
+            Day();
+            Instantiate(dayPrefimg, GameContent);
+
+
+        }
+
+        if (curr <= 0 && !isDayEnd)
+        {
+            curr = 0;
+            Night();
+            Instantiate(nightPrefimg, GameContent);
+
+        }
+
+        if (curr <= 0 && !isNightEnd)
+        {
+            curr = 0;
+            TimeTokill();
+            Instantiate(mafiaTimetoKillPref, GameContent);
+            Player[] playerz = PhotonNetwork.PlayerList;
+           // foreach (Transform child in playersListContent)
+          //  {
+          //      Destroy(child.gameObject);
+         //   }
+            for (int i = 0; i < playerz.Length; i++)
+            {
+                Instantiate(PlayersListForVote, GameContent).GetComponent<PlayersItem>().SetUp(playerz[i]);
+            }
+        }
+
+    }
+
+    #endregion
+
+    public void InvitesPanelOpen()
+    {
+        invatesPanel.SetActive(true);
+    }
+
+    public void JoinRoomNow()
+    {
+        CreatePhotonRoom();
+    }
+
+    #region Photon Methods
 
     public override void OnJoinedLobby()
     {
         Debug.Log("You have connected to a Photon Lobby");
-        
+        string roomName = PlayerPrefs.GetString("photonroom");
+
+        if (!string.IsNullOrEmpty(roomName))
+        {
+            MainMenuManager.manage.JoinPlayRoom();
+        }
     }
 
     public override void OnCreatedRoom()
@@ -153,11 +360,23 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         Debug.Log("Join to room name: " + PhotonNetwork.CurrentRoom.Name);
         MainMenuManager.manage.isCreateRoomPanelOpen = false;
         MainMenuManager.manage._createroom.SetActive(false);
-        ChatController.manage.Connect();
+        if (PlayerPrefs.GetInt("ischatconnected") == 0)
+        {
+            ChatController.manage.Connect();
+            PlayerPrefs.SetInt("ischatconnected",1);
+        }
         CurrentRoomActive.SetActive(true);
+        isRoomCreatedAndJoined = true;
+
+        if (PhotonNetwork.CurrentRoom.PlayerCount != PhotonNetwork.CurrentRoom.MaxPlayers)
+        {
+            isTimeStart = false;
+        }
+        Counter.text = "Идет набор";
         rangCurrentRoom.text = PhotonNetwork.CurrentRoom.CustomProperties["RANG"].ToString();
         nameCurrentRoom.text = PhotonNetwork.CurrentRoom.Name.ToString();
         maxPlayersInRoom.text = PhotonNetwork.CurrentRoom.CustomProperties["MAXP"].ToString();
+
         Player[] playerz = PhotonNetwork.PlayerList;
         foreach (Transform child in playersListContent)
         {
@@ -169,17 +388,34 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         {
             Instantiate(playersListItemPrefab, playersListContent).GetComponent<PlayersItem>().SetUp(playerz[i]);
             currPlayersInRoom.text = playerz.Length.ToString();
-            
+
+
         }
+
+        Hashtable playerCustomProps = new Hashtable();
+        playerCustomProps.Add("Role", UnityEngine.Random.Range(0, 10));
+        PhotonNetwork.SetPlayerCustomProperties(playerCustomProps);
     }
 
     public override void OnLeftRoom()
     {
         Debug.Log("You have left a room");
-        
-        
+        isRoomCreatedAndJoined = false;
+        isStartGame = false;
+        isTimeStart = false;
+        isNightStart = false;
+        isDayStart = false;
+        isDayEnd = false;
+        isMafiaTimeToKill = false;
+        isMafiaTimeToKillEnd = false;
+        foreach (Transform trans in GameContent)
+        {
+            Destroy(trans.gameObject);
+        }
+        curr = 20;
         playerMenu.manage.closePlayerPanel();
         CurrentRoomActive.SetActive(false);
+        ChatController.manage.Disconnect();
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
@@ -210,16 +446,41 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
+        
         Debug.Log("Another player has joined room" + newPlayer.UserId);
+        playerCustomProperties["Role"] = UnityEngine.Random.Range(1, 2);
+        PhotonNetwork.LocalPlayer.CustomProperties = playerCustomProperties;
         Instantiate(playersListItemPrefab, playersListContent).GetComponent<PlayersItem>().SetUp(newPlayer);
         currPlayersInRoom.text = PhotonNetwork.PlayerList.Length.ToString();
-
+        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers)
+        {
+            isLastPlayerConnected = true;
+        }
+        
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Debug.Log("Another player has joined room" + otherPlayer.UserId);
-        
+        isLastPlayerConnected = false;
+        curr = 25f;
+        if (PhotonNetwork.CurrentRoom.PlayerCount != PhotonNetwork.CurrentRoom.MaxPlayers)
+        {
+            isStartGame = false;
+            isTimeStart = false;
+            isNightStart = false;
+            isDayStart = false;
+            isDayEnd = false;
+            isMafiaTimeToKill = false;
+            isMafiaTimeToKillEnd = false;
+            foreach (Transform trans in GameContent)
+            {
+                Destroy(trans.gameObject);
+            }
+            isNotEnougPlayersInRoom = true;
+            PlayRoom.SetActive(false);
+        }
+
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)
@@ -236,6 +497,8 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     {
         print("Room creations failed: " + message.ToString());
     }
+
+    #endregion
 
     #endregion
 

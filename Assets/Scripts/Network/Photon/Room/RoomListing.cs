@@ -13,6 +13,10 @@ public class RoomListing : MonoBehaviourPunCallbacks
     [SerializeField]
     private Text _textMaxPlayer;
     [SerializeField]
+    private GameObject _maxPlayersInRoom;
+    [SerializeField]
+    private GameObject _currPlayersInRoom;
+    [SerializeField]
     private Text _textCurrPlayer;
     [SerializeField]
     private Text _textRoomName;
@@ -30,12 +34,23 @@ public class RoomListing : MonoBehaviourPunCallbacks
         _textMaxPlayer.text = roomInfo.MaxPlayers.ToString();
         _textRoomName.text = roomInfo.Name;
         _playersCountProgress.value = _playersCountProgress.maxValue - (_playersCountProgress.maxValue - roomInfo.PlayerCount);
-        //_textRangPlayer.text = PhotonNetwork.CurrentRoom.CustomProperties["RANG"].ToString();
+        if (_playersCountProgress.value == roomInfo.MaxPlayers)
+        {
+            _maxPlayersInRoom.SetActive(true);
+        }
+        else
+        {
+            _maxPlayersInRoom.SetActive(false);
+
+        }
     }
 
     public void OnClick_Button()
     {
+        
         PhotonConnector.manage.JoinRoom(RoomInfo);
+        PhotonConnector.manage.TimerWhenReady(RoomInfo);
+
     }
 
 }

@@ -10,10 +10,12 @@ public class UIFriend : MonoBehaviour
 {
     public static UIFriend manage;
     [SerializeField] private TMP_Text friendNameText;
+    public Text friendPrivateRoomName;
     [SerializeField] private FriendInfo friend;
     [SerializeField] private Color onlineColor;
     [SerializeField] private Color offlineColor;
     [SerializeField] private Image onlineImg;
+    public bool isActive = false;
 
 
     public static Action<string> OnRemoveFriend = delegate { };
@@ -58,7 +60,23 @@ public class UIFriend : MonoBehaviour
 
     public void InviteFriend()
     {
-        Debug.Log("Clicked to invate friend" + friend.UserId);
+        
         OnInviteFriend?.Invoke(friend.UserId);
+        Debug.Log("Clicked to invate friend" + friend.UserId);
+    }
+
+    public void InvitesList()
+    {
+        MainMenuManager.manage.MainMenu();
+        MainMenuManager.manage.InvitesList();
+        UIDisplayInvates.manage.UIDisplayFriendsInvatesOnEnter();
+    }
+
+    public void FriendsPrivateRoom_OnClicked()
+    {
+        MainMenuManager.manage._friends.SetActive(false);
+        MainMenuManager.manage.FriendMsgPanel.SetActive(true);
+        MainMenuManager.manage.nameFriendInPrivateMsgRoom.text = friendNameText.text;
+        ChatController.manage.Connect();
     }
 }

@@ -10,10 +10,8 @@ public class UIAddFriends : MonoBehaviour
 
     public void SetAddFriendName(string name)
     {
-        //friendName.text = name;
-        //name = "piotr";
+
         displayName = name;
-        //print(name);
         
     }
 
@@ -22,6 +20,7 @@ public class UIAddFriends : MonoBehaviour
 
         if (string.IsNullOrEmpty(displayName)) return;
         OnAddFriend?.Invoke(displayName);
+
         //print(string.IsNullOrEmpty(displayName));
     }
 

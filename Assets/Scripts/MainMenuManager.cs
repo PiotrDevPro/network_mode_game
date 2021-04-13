@@ -24,12 +24,15 @@ public class MainMenuManager : MonoBehaviour
     public GameObject _loginEdit;
     public GameObject RUSure;
     public GameObject InviteFriendsPanel;
+    public GameObject FriendMsgPanel;
+    [Header("Профиль")]
+    public GameObject friendsPanel;
+    public GameObject invatesPanel;
     [Header("Настройка")]
     public GameObject _support;
     public Toggle musicOnOff;
-    public Image playerNumList;
-    public Text maxPlayersLabel;
-    public Text currPlayersLabel;
+
+    public Text nameFriendInPrivateMsgRoom;
     public TMPro.TextMeshProUGUI namePlayerlabel;
     [Header("Булевые переменные")]
     public bool isCreateRoomPanelOpen = false;
@@ -40,6 +43,7 @@ public class MainMenuManager : MonoBehaviour
     void Awake()
     {
         manage = this;
+        Application.targetFrameRate = 1000;
         musicOnOff.isOn = (PlayerPrefs.GetInt("Sound") == 0) ? true : false;
     }
 
@@ -51,9 +55,152 @@ public class MainMenuManager : MonoBehaviour
     void Update()
     {
         //PlayerPrefs.DeleteAll();
+        //print(PlayerPrefs.GetString("photonroom"));
     }
 
+    #region Profile
+
+    public void Profile()
+    {
+        _profile.SetActive(true);
+        namePlayerlabel.text = PlayerPrefs.GetString("Nickname");
+        
+        FriendControllerOnEnter();
+        isProfileOpened = true;
+    }
+
+    public void MainMenu()
+    {
+        FriendControllerOnExit();
+        _friends.SetActive(false);
+        _mainmenu.SetActive(true);
+        _scrollPanel.GetComponentInChildren<ScrollRect>().enabled = true;
+    }
+
+    public void Friends()
+    {
+        _friends.SetActive(true);
+        FriendControllerOnEnter();
+        Debug.Log("FriendsOpen");
+        _scrollPanel.GetComponentInChildren<ScrollRect>().enabled = false;
+    }
+
+    public void ProfileExit()
+    {
+        
+        _profile.SetActive(false);
+        isProfileOpened = false;
+        FriendControllerOnExit();
+        UIInvate.OnRoomInvateAccept -= HandleRoomInviteAccept;
+        UIDisplayInvates.manage.UIDisplayFriendsInvatesOnExit();
+        ChatController.manage.Disconnect();
+    }
+
+    void FriendControllerOnEnter()
+    {
+        PlayfabFriendController.manage.PlayFabContrOnEnter();
+        PhotonFriendsController.manage.PhotonFriendControllerOnEnter();
+        UIDisplayFriends.manage.FriendListUpdateOnEnter();
+        GetPhotonFriends?.Invoke();
+    }
+
+    void FriendControllerOnExit()
+    {
+        PlayfabFriendController.manage.PlayfabFriendControllerOnExit();
+        PhotonFriendsController.manage.PhotonFriendsControllerOnExit();
+        UIDisplayFriends.manage.UIDisplayFriendsOnExit();
+    }
+
+    public void Edit()
+    {
+        _loginEdit.SetActive(true);
+    }
+
+    public void DeleteIsOk()
+    {
+        UIFriend.manage.RemoveFriends();
+    }
+
+    public void DeleteIsCancel()
+    {
+        RUSure.SetActive(false);
+        isDeleteFiles = false;
+    }
+
+    #region Invates
+
+    public void FriendScrollActive()
+    {
+        friendsPanel.SetActive(true);
+        invatesPanel.SetActive(false);
+        FriendControllerOnEnter();
+    }
+
+    public void InvatesScrollActive()
+    {
+        friendsPanel.SetActive(false);
+        invatesPanel.SetActive(true);
+        FriendControllerOnExit();
+        UIInvate.OnRoomInvateAccept += HandleRoomInviteAccept;
+        UIDisplayInvates.manage.UIDisplayFriendsInvatesOnEnter();
+        
+    }
+
+    public void InvitesList()
+    {
+        Profile();
+        InvatesScrollActive();
+    }
+
+    public void InviteFriendsOpen()
+    {
+        InviteFriendsPanel.SetActive(true);
+       
+        //PhotonNetwork.LeaveRoom();
+        FriendControllerOnEnter();
+       // UIDisplayInvates.manage.UIDisplayFriendsInvatesOnEnter();
+    }
+
+    public void InviteFriendsClose()
+    {
+        InviteFriendsPanel.SetActive(false);
+        //PhotonConnector.manage.JoinRoom(info);
+        FriendControllerOnExit();
+      //  UIDisplayInvates.manage.UIDisplayFriendsInvatesOnExit();
+    }
+
+    private void HandleRoomInviteAccept(string roomName)
+    {
+        PlayerPrefs.SetString("photonroom", roomName);
+        if (PhotonNetwork.InRoom)
+        {
+            PhotonNetwork.LeaveRoom();
+
+        } else
+        {
+            if (PhotonNetwork.InLobby)
+            {
+                JoinPlayRoom();
+            }
+        }
+    }
+
+    public void JoinPlayRoom()
+    {
+        string roomName = PlayerPrefs.GetString("photonroom");
+        PlayerPrefs.SetString("photonroom", "");
+        PhotonNetwork.JoinRoom(roomName);
+
+    }
+
+
+    #endregion
+
+    #endregion
+
     #region MainMenu
+
+
     public void PlayPanel()
     {
         _play.SetActive(true);
@@ -75,43 +222,18 @@ public class MainMenuManager : MonoBehaviour
     {
         _createroom.SetActive(true);
         isCreateRoomPanelOpen = true;
+        PhotonConnector.manage.roomName.text = "";
+        PhotonConnector.manage.maxPlayers.maxValue = 21;
+        PhotonConnector.manage.maxPlayers.minValue = 2;
+        PhotonConnector.manage.rangPlayers.value = 0;
+        PhotonConnector.manage.rangPlayers.minValue = 0;
+        PhotonConnector.manage.rangPlayers.maxValue = 8;
     }
 
     public void CreateRoomPanellQuit()
     {
         _createroom.SetActive(false);
         isCreateRoomPanelOpen = false;
-    }
-
-    public void Friends()
-    {
-        _friends.SetActive(true);
-        PlayfabFriendController.manage.PlayFabContrOnEnter();
-        PhotonFriendsController.manage.PhotonFriendControllerOnEnter();
-        UIDisplayFriends.manage.FriendListUpdateOnEnter();
-        GetPhotonFriends?.Invoke();
-        Debug.Log("FriendsOpen");
-        _scrollPanel.GetComponentInChildren<ScrollRect>().enabled = false;
-    }
-
-    public void InviteFriendsOpen()
-    {
-        InviteFriendsPanel.SetActive(true);
-    }
-
-    public void InviteFriendsClose()
-    {
-        InviteFriendsPanel.SetActive(false);
-    }
-
-    public void MainMenu()
-    {
-        PlayfabFriendController.manage.PlayfabFriendControllerOnExit();
-        PhotonFriendsController.manage.PhotonFriendsControllerOnExit();
-        UIDisplayFriends.manage.UIDisplayFriendsOnExit();
-        _friends.SetActive(false);
-        _mainmenu.SetActive(true);
-        _scrollPanel.GetComponentInChildren<ScrollRect>().enabled = true;
     }
 
     public void CurrentRoomChat()
@@ -136,33 +258,16 @@ public class MainMenuManager : MonoBehaviour
         _rules.SetActive(false);
     }
 
-    public void Profile()
+    public void FriendPrivatePanel()
     {
-        _profile.SetActive(true);
-        namePlayerlabel.text = PlayerPrefs.GetString("Nickname");
-        isProfileOpened = true;
+        FriendMsgPanel.SetActive(true);
+        _friends.SetActive(false);
     }
 
-    public void ProfileExit()
+    public void FriendPrivatePanelClose()
     {
-        _profile.SetActive(false);
-        isProfileOpened = false;
-    }
-
-    public void Edit()
-    {
-        _loginEdit.SetActive(true);
-    }
-
-    public void DeleteIsOk()
-    {
-        UIFriend.manage.RemoveFriends();
-    }
-
-    public void DeleteIsCancel()
-    {
-        RUSure.SetActive(false);
-        isDeleteFiles = false;
+        FriendMsgPanel.SetActive(false);
+        ChatController.manage.Disconnect();
     }
 
     #endregion

@@ -3,12 +3,16 @@ using Photon.Pun;
 using Photon.Realtime;
 using PlayFab;
 using PlayFab.ClientModels;
+using PlayFab.SharedModels;
 using System;
+using System.Collections.Generic;
 
 public class PlayFabLogin : MonoBehaviour
 {
     public static PlayFabLogin manage;
     public string username;
+
+    //GetFriendsListResult getfriendlist;
 
     private void Awake()
     {

@@ -119,7 +119,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8876562031311076377}
+      - m_Target: {fileID: 0}
         m_MethodName: SetAddFriendName
         m_Mode: 5
         m_Arguments:
@@ -130,7 +130,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 8876562031311076377}
+      - m_Target: {fileID: 0}
         m_MethodName: AddFriend
         m_Mode: 1
         m_Arguments:
@@ -310,7 +310,6 @@ GameObject:
   - component: {fileID: 4471049001742331603}
   - component: {fileID: 4471049001742331602}
   - component: {fileID: 6305474725223382403}
-  - component: {fileID: 8876562031311076377}
   m_Layer: 5
   m_Name: PlayerPrefab
   m_TagString: Untagged
@@ -419,7 +418,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4471049001742331603}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6305474725223382403}
+        m_MethodName: OnClick_
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6305474725223382403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,20 +443,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nickName: {fileID: 7193495376349648150}
---- !u!114 &8876562031311076377
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4471049001742331604}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8a4a57660fc1be4a8e282a9393d1fcf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  displayName: 
-  friendName: {fileID: 7193495376349648150}
 --- !u!1 &7809721955882761802
 GameObject:
   m_ObjectHideFlags: 0

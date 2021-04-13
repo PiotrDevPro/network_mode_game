@@ -29,4 +29,14 @@ public class PlayersItem : MonoBehaviourPunCallbacks
         Destroy(gameObject);
         PhotonConnector.manage.currPlayersInRoom.text = PhotonNetwork.PlayerList.Length.ToString();
     }
+
+    public void OnClick_()
+    {
+        print(player.NickName);
+        print(player.CustomProperties["Role"]);
+        PhotonConnector.manage.currPlayersInRoom.text = PhotonNetwork.PlayerList.Length.ToString();
+        //OnPlayerLeftRoom(player);
+        //PhotonNetwork.LeaveRoom();
+        
+    }
 }

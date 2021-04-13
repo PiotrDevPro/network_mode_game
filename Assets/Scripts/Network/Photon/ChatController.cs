@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using ExitGames.Client.Photon;
 using TMPro;
+using System;
 
 public class ChatController : MonoBehaviour, IChatClientListener
 {
@@ -15,7 +16,11 @@ public class ChatController : MonoBehaviour, IChatClientListener
     public string[] ChannelsToJoinOnConnect;
     public int HistoryLengthToFetch;
     public InputField InputFieldChat;
+    public InputField InputFieldPrivateChat;
+    public TextMeshProUGUI PrivateText;
     public TextMeshProUGUI CurrentChannelText;
+    public GameObject msgPrefab;
+    public Transform msgContainer;
     public bool isActive = false;
     private string nickName;
 
@@ -28,12 +33,53 @@ public class ChatController : MonoBehaviour, IChatClientListener
     public int TestLength = 2048;
     private byte[] testBytes = new byte[2048];
 
+    public static Action<string, string> OnRoomInvite = delegate { };
+
 
     private void Awake()
     {
         manage = this;
         nickName = PlayerPrefs.GetString("Nickname");
+        
+
     }
+
+    #region Invites systems
+    public void InvatesFriendOnEnter()
+    {
+        UIFriend.OnInviteFriend += HandleFriendInvites;
+    }
+
+
+    public void InvatesFriendsOnExit()
+    {
+        UIFriend.OnInviteFriend -= HandleFriendInvites;
+        print("InvatesFriendsOnExit");
+    }
+
+    private void HandleFriendInvites(string reciept)
+    {
+        chatClient.SendPrivateMessage(reciept, PhotonNetwork.CurrentRoom.Name);
+        print(reciept);
+        print(PhotonNetwork.CurrentRoom.Name);
+    }
+
+    #endregion
+
+
+    public void SendPrivateMsg()
+    {
+        if (this.InputFieldPrivateChat != null)
+        {
+
+            this.chatClient.SendPrivateMessage(MainMenuManager.manage.nameFriendInPrivateMsgRoom.text, InputFieldPrivateChat.text);
+            this.InputFieldPrivateChat.text = "";
+
+        }
+    }
+
+
+
     private void Start()
     {
         
@@ -67,12 +113,19 @@ public class ChatController : MonoBehaviour, IChatClientListener
         this.chatClient.UseBackgroundWorkerForSending = true;
 #endif
         this.chatClient.AuthValues = new AuthenticationValues(this.nickName);
+        ChatAppSettings chatSetting = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
         this.chatClient.ConnectUsingSettings(this.chatAppSettings);
     }
 
     public void Disconnect()
     {
-        chatClient.Disconnect();
+        PlayerPrefs.SetInt("ischatconnected", 0);
+        foreach (Transform child in msgContainer)
+        {
+            Destroy(child.gameObject);
+        }
+            chatClient.Disconnect();
+        
 
     }
 
@@ -80,7 +133,9 @@ public class ChatController : MonoBehaviour, IChatClientListener
     {
         if (this.chatClient != null)
         {
+            PlayerPrefs.SetInt("ischatconnected", 0);
             this.chatClient.Disconnect();
+            
         }
     }
 
@@ -136,6 +191,7 @@ public class ChatController : MonoBehaviour, IChatClientListener
 
         bool doingPrivateChat = this.chatClient.PrivateChannels.ContainsKey(this.selectedChannelName);
         string privateChatTarget = string.Empty;
+        print("SendChatMessage");
         if (doingPrivateChat)
         {
             // the channel name for a private conversation is (on the client!!) always composed of both user's IDs: "this:remote"
@@ -264,6 +320,7 @@ public class ChatController : MonoBehaviour, IChatClientListener
     public void OnDisconnected()
     {
         print("OnDisconnected");
+        PlayerPrefs.SetInt("ischatconnected", 0);
     }
 
     public void OnGetMessages(string channelName, string[] senders, object[] messages)
@@ -273,12 +330,20 @@ public class ChatController : MonoBehaviour, IChatClientListener
             // update text
             this.ShowChannel(this.selectedChannelName);
         }
+
+        Debug.Log($"Photon Chat OnGetMessages {channelName}");
+        for (int i = 0; i < senders.Length; i++)
+        {
+            Debug.Log($"{senders[i]} messaged: {messages[i]}");
+        }
+
         print("OnGetMessages");
+
     }
 
     public void OnPrivateMessage(string sender, object message, string channelName)
     {
-        print("OnPrivateMessage");
+        
         // as the ChatClient is buffering the messages for you, this GUI doesn't need to do anything here
         // you also get messages that you sent yourself. in that case, the channelName is determinded by the target of your msg
         //this.InstantiateChannelButton(channelName);
@@ -292,6 +357,19 @@ public class ChatController : MonoBehaviour, IChatClientListener
         {
             this.ShowChannel(channelName);
         }
+
+        if (!string.IsNullOrEmpty(message.ToString()))
+        {
+            string[] splitNames = channelName.Split(new char[] { ':' });
+            string senderName = splitNames[0];
+          
+                //PrivateText.text = sender + ": " + message;
+                msgPrefab.GetComponent<TextMeshProUGUI>().text = sender + ": " + message;
+                Instantiate(msgPrefab, msgContainer);
+                //PrivateTextMessage.text = message.ToString();
+                //OnRoomInvite?.Invoke(sender,message.ToString());
+                print(sender + ":" + message);
+        }
     }
     public void OnStatusUpdate(string user, int status, bool gotMessage, object message)
     {
@@ -303,7 +381,10 @@ public class ChatController : MonoBehaviour, IChatClientListener
         // in this demo, we simply send a message into each channel. This is NOT a must have!
         foreach (string channel in channels)
         {
-            this.chatClient.PublishMessage(channel, "Вошел в чат."); // you don't HAVE to send a msg on join but you could.
+            if (PhotonConnector.manage.isRoomCreatedAndJoined)
+            {
+                this.chatClient.PublishMessage(channel, "Вошел в чат."); // you don't HAVE to send a msg on join but you could.
+            }
 
             //if (this.ChannelToggleToInstantiate != null)
             //	{
@@ -314,8 +395,9 @@ public class ChatController : MonoBehaviour, IChatClientListener
 
         Debug.Log("OnSubscribed: " + string.Join(", ", channels));
 
-        // Switch to the first newly created channel
-        this.ShowChannel(channels[0]);
+            this.ShowChannel(channels[0]);
+
+        
     }
 
 
@@ -356,6 +438,7 @@ public class ChatController : MonoBehaviour, IChatClientListener
     public void OnUserPropertiesChanged(string channel, string targetUserId, string senderUserId, Dictionary<object, object> properties)
     {
         Debug.LogFormat("OnUserPropertiesChanged: (channel:{0} user:{1}) by {2}. Props: {3}.", channel, targetUserId, senderUserId, Extensions.ToStringFull(properties));
+        
     }
 
     /// <inheritdoc />
@@ -398,6 +481,7 @@ public class ChatController : MonoBehaviour, IChatClientListener
 
         this.selectedChannelName = channelName;
         this.CurrentChannelText.text = channel.ToStringMessages();
+        this.PrivateText.text = channel.ToStringMessages();
         //this._lobbyManager.Log(channel.ToStringMessages());
         Debug.Log("ShowChannel: " + this.selectedChannelName);
 
