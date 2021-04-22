@@ -78,6 +78,8 @@
     <Compile Include="Assets\Photon\PhotonLibs\WebSocket\WebSocket.cs" />
     <Compile Include="Assets\Photon\PhotonRealtime\Demos\DemoLoadBalancing\ConnectAndJoinRandomLb.cs" />
     <Compile Include="Assets\Scripts\Game\GameManage.cs" />
+    <Compile Include="Assets\Scripts\Game\Killed.cs" />
+    <Compile Include="Assets\Scripts\Game\KilliconActive.cs" />
     <Compile Include="Assets\Scripts\MainMenuManager.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\ChatController.cs" />
     <Compile Include="Assets\Scripts\Network\Photon\Friends\PhotonFriendsController.cs" />

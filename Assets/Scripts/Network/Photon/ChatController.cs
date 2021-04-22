@@ -78,6 +78,11 @@ public class ChatController : MonoBehaviour, IChatClientListener
         }
     }
 
+    public void SendPublicMsg()
+    {
+
+    }
+
 
 
     private void Start()
@@ -154,6 +159,8 @@ public class ChatController : MonoBehaviour, IChatClientListener
         }
     }
 
+    
+
     public void OnEnterSend()
     {
         if (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.KeypadEnter))
@@ -191,7 +198,6 @@ public class ChatController : MonoBehaviour, IChatClientListener
 
         bool doingPrivateChat = this.chatClient.PrivateChannels.ContainsKey(this.selectedChannelName);
         string privateChatTarget = string.Empty;
-        print("SendChatMessage");
         if (doingPrivateChat)
         {
             // the channel name for a private conversation is (on the client!!) always composed of both user's IDs: "this:remote"
@@ -319,6 +325,7 @@ public class ChatController : MonoBehaviour, IChatClientListener
 
     public void OnDisconnected()
     {
+        
         print("OnDisconnected");
         PlayerPrefs.SetInt("ischatconnected", 0);
     }
@@ -383,7 +390,14 @@ public class ChatController : MonoBehaviour, IChatClientListener
         {
             if (PhotonConnector.manage.isRoomCreatedAndJoined)
             {
-                this.chatClient.PublishMessage(channel, "Вошел в чат."); // you don't HAVE to send a msg on join but you could.
+                if (Application.systemLanguage != SystemLanguage.Russian)
+                {
+                    this.chatClient.PublishMessage(channel, "entered the chat."); // you don't HAVE to send a msg on join but you could.
+                }
+                else
+                {
+                    this.chatClient.PublishMessage(channel, "Вошел в чат");
+                }
             }
 
             //if (this.ChannelToggleToInstantiate != null)
@@ -461,7 +475,8 @@ public class ChatController : MonoBehaviour, IChatClientListener
     public void OnChatStateChange(ChatState state)
     {
         print(chatClient.State);
-        print(UserName);
+
+        
     }
 
     public void ShowChannel(string channelName)

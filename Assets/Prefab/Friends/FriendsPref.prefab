@@ -936,6 +936,7 @@ MonoBehaviour:
   onlineColor: {r: 1, g: 1, b: 1, a: 1}
   offlineColor: {r: 0, g: 0, b: 0, a: 1}
   onlineImg: {fileID: 1441848247}
+  isActive: 0
 --- !u!1 &7284018644074765741
 GameObject:
   m_ObjectHideFlags: 0

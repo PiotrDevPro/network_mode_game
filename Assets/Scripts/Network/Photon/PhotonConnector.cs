@@ -20,12 +20,14 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public GameObject loginPanel;
     public GameObject invatesPanel;
     public GameObject PlayRoom;
+
     [Header("Элементы")]
     public Slider maxPlayers;
     public Slider rangPlayers;
     public InputField roomName;
     public Text maxPlayerNum;
     public Text rangNum;
+
     [Header("Созданная комната")]
     public Text rangCurrentRoom;
     public Text nameCurrentRoom;
@@ -36,6 +38,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public Text gameCounter;
     private float curr = 0;
     private float starttime = 20f;// 20
+    private int counter = 0;
 
     [Header("Элементы Гэймплэя")]
     [SerializeField] Transform roomListContent;
@@ -44,22 +47,22 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     [SerializeField] GameObject playersListItemPrefab;
     [SerializeField] GameObject PlayersListForVote;
     [SerializeField] Transform GameContent;
+    [SerializeField] Transform GameContentPlayersList;
     [SerializeField] GameObject dayPrefimg;
     [SerializeField] GameObject nightPrefimg;
     [SerializeField] GameObject mafiaTimetoKillPref;
-    
+    [SerializeField] GameObject resultOfKillPref;
+
+    [Header("Элементы GameToolBar")]
+    [SerializeField] GameObject PlayMenuPanel;
     [SerializeField] GameObject dayImg;
     [SerializeField] GameObject nightImg;
     [SerializeField] GameObject voteImg;
-
     [SerializeField] GameObject mafPref;
     [SerializeField] GameObject mirPref;
     [SerializeField] Transform mafConteiner;
     [SerializeField] Transform mirContainer;
     
-
-
-
     [Header("Булевые переменные GAMEPLAY")]
     public bool isTimeStart = false;
     public bool isStartGame = false;
@@ -69,6 +72,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public bool isNightEnd = false;
     public bool isMafiaTimeToKill = false;
     public bool isMafiaTimeToKillEnd = false;
+    public bool isStartMsgResultKill = false;
 
     [Header("Булевые переменные КОМНАТА")]
     public bool isNotEnougPlayersInRoom = false;
@@ -76,11 +80,11 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public bool isLastPlayerConnected = false;
     public bool isConected = false;
 
-    RoomInfo info;
+    public Player player_;
 
     private void Update()
     {
-        print(isTimeStart);
+        //print(isTimeStart);
         //PlayerPrefs.DeleteAll();
         if (MainMenuManager.manage.isCreateRoomPanelOpen)
         {
@@ -92,17 +96,40 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         if (isRoomCreatedAndJoined && isTimeStart)
         {
             Timer();
-            Counter.text = "Игра начнется через " + curr.ToString("0");
+            if (Application.systemLanguage != SystemLanguage.Russian)
+            {
+                Counter.text = "The game will start after " + curr.ToString("0");
+            }
+            else
+            {
+                Counter.text = "Игра начнется через " + curr.ToString("0");
+            }
+
         }
         else if (isRoomCreatedAndJoined && !isTimeStart || isNotEnougPlayersInRoom)
         {
-            Counter.text = "Идет набор";
+            if (Application.systemLanguage != SystemLanguage.Russian)
+            {
+                Counter.text = "Recruitment in progress";
+            }
+            else
+            {
+                Counter.text = "Идет набор";
+            }
+            
         }
         if (isLastPlayerConnected)
         {
             
             Timer();
-            Counter.text = "Игра начнется через " + curr.ToString("0");
+            if (Application.systemLanguage != SystemLanguage.Russian)
+            {
+                Counter.text = "The game will start after " + curr.ToString("0");
+            }
+            else
+            {
+                Counter.text = "Игра начнется через " + curr.ToString("0");
+            }
         }
         if (isStartGame)
         {
@@ -193,13 +220,11 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         Hashtable RoomCustomProps = new Hashtable();
         RoomCustomProps.Add("RANG", (int)rangPlayers.value);
         RoomCustomProps.Add("MAXP", (int)maxPlayers.value);
+        RoomCustomProps.Add("Kick1", 0);
+        RoomCustomProps.Add("Kick2", 0);
         ro.CustomRoomProperties = RoomCustomProps;
         PhotonNetwork.JoinOrCreateRoom(roomName.text, ro, TypedLobby.Default);
     }
-   
-    #endregion
-
-    #region Public Method
 
     public void LeftRoom()
     {
@@ -221,38 +246,54 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
 
     public void TimerWhenReady(RoomInfo info)
     {
-      if  (info.MaxPlayers == info.MaxPlayers)
+        if (info.MaxPlayers == info.MaxPlayers)
         {
             isTimeStart = true;
         }
     }
 
+    #endregion
+
     #region Game
+
+   
 
     void Day()
     {
         if (isStartGame)
         {
+            PlayMenuPanel.SetActive(false);
             dayImg.SetActive(true);
             nightImg.SetActive(false);
-            
-            if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
-            {
-                Instantiate(mafPref, mafConteiner);
-                Instantiate(mirPref, mirContainer);
+                Player[] playerz = PhotonNetwork.PlayerList;
+                for (int i = 0; i < playerz.Length; i++)
+                {
+                    Instantiate(PlayersListForVote, GameContentPlayersList).GetComponent<PlayersItem>().SetUp(playerz[i]);
+                }
 
-            }
-            if (PhotonNetwork.CurrentRoom.PlayerCount == 3)
-            {
-                Instantiate(mafPref, mafConteiner);
-                Instantiate(mafPref, mafConteiner);
-                Instantiate(mirPref, mirContainer);
-            }
+                if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+                {
+                    Instantiate(mafPref, mafConteiner);
+                    Instantiate(mirPref, mirContainer);
+
+                }
+                if (PhotonNetwork.CurrentRoom.PlayerCount == 3)
+                {
+                    Instantiate(mafPref, mafConteiner);
+                    Instantiate(mafPref, mafConteiner);
+                    Instantiate(mirPref, mirContainer);
+                }
+            
+            
             isDayStart = true;
-            curr = 1; // 60
+            curr = 60; // 60
             print(PhotonNetwork.CurrentRoom.PlayerCount);
+                
         }
     }
+
+
+
 
     void Night()
     {
@@ -262,8 +303,8 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
             dayImg.SetActive(false);
             nightImg.SetActive(true);
             gameCounter.color = Color.cyan;
-            curr = 2; // 25
-            print("Night");
+            curr = 25; // 25
+            
     }
 
     void TimeTokill()
@@ -275,8 +316,31 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         voteImg.SetActive(true);
         dayImg.SetActive(false);
         nightImg.SetActive(false);
-        curr = 2; // 15
-        print("MafiaTimeToKill");
+        curr = 5; // 15
+    }
+
+    void TimeToKillEnd()
+    {
+
+        isMafiaTimeToKill = false;
+        isMafiaTimeToKillEnd = true;
+        isStartMsgResultKill = true;
+        gameCounter.color = Color.yellow;
+        voteImg.SetActive(false);
+        dayImg.SetActive(true);
+        nightImg.SetActive(false);
+        curr = 5; //
+
+    }
+
+    void Day2()
+    {
+        isStartMsgResultKill = false;
+        isDayStart = true;
+        isDayEnd = true;
+        dayImg.SetActive(true);
+        nightImg.SetActive(false);
+        curr = 60;
     }
 
     void Timer()
@@ -294,7 +358,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
             PlayRoom.SetActive(true);
             Day();
             Instantiate(dayPrefimg, GameContent);
-
+            print("Day1");
 
         }
 
@@ -303,6 +367,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
             curr = 0;
             Night();
             Instantiate(nightPrefimg, GameContent);
+            print("Night");
 
         }
 
@@ -311,15 +376,28 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
             curr = 0;
             TimeTokill();
             Instantiate(mafiaTimetoKillPref, GameContent);
-            Player[] playerz = PhotonNetwork.PlayerList;
-           // foreach (Transform child in playersListContent)
-          //  {
-          //      Destroy(child.gameObject);
-         //   }
-            for (int i = 0; i < playerz.Length; i++)
-            {
-                Instantiate(PlayersListForVote, GameContent).GetComponent<PlayersItem>().SetUp(playerz[i]);
-            }
+            print("TimeTokill");
+
+        }
+
+        if (curr <= 0 && !isMafiaTimeToKillEnd)
+        {
+
+            curr = 0;
+            TimeToKillEnd();
+            PlayersItem.manage.numbers.SetActive(false);
+            Instantiate(resultOfKillPref, GameContent);
+            print("isMafiaTimeToKillEnd");
+
+        }
+
+        if (curr <= 0 && !isDayStart)
+        {
+
+            curr = 0;
+            Day2();
+            Instantiate(dayPrefimg, GameContent);
+            print("Day2");
         }
 
     }
@@ -334,6 +412,11 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public void JoinRoomNow()
     {
         CreatePhotonRoom();
+    }
+
+    public void KickFromRoom()
+    {
+
     }
 
     #region Photon Methods
@@ -372,7 +455,6 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         {
             isTimeStart = false;
         }
-        Counter.text = "Идет набор";
         rangCurrentRoom.text = PhotonNetwork.CurrentRoom.CustomProperties["RANG"].ToString();
         nameCurrentRoom.text = PhotonNetwork.CurrentRoom.Name.ToString();
         maxPlayersInRoom.text = PhotonNetwork.CurrentRoom.CustomProperties["MAXP"].ToString();
@@ -388,12 +470,10 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         {
             Instantiate(playersListItemPrefab, playersListContent).GetComponent<PlayersItem>().SetUp(playerz[i]);
             currPlayersInRoom.text = playerz.Length.ToString();
-
-
         }
 
         Hashtable playerCustomProps = new Hashtable();
-        playerCustomProps.Add("Role", UnityEngine.Random.Range(0, 10));
+        playerCustomProps.Add("Role", PhotonNetwork.CurrentRoom.PlayerCount +1);
         PhotonNetwork.SetPlayerCustomProperties(playerCustomProps);
     }
 
@@ -408,13 +488,27 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         isDayEnd = false;
         isMafiaTimeToKill = false;
         isMafiaTimeToKillEnd = false;
+        //if ((int)Player.CustomProperties["Kick"] != 10)
+        //{
+         //   PhotonNetwork.LeaveRoom();
+        //}
         foreach (Transform trans in GameContent)
+        {
+            Destroy(trans.gameObject);
+        }
+        foreach (Transform trans in mafConteiner)
+        {
+            Destroy(trans.gameObject);
+        }
+
+        foreach (Transform trans in mirContainer)
         {
             Destroy(trans.gameObject);
         }
         curr = 20;
         playerMenu.manage.closePlayerPanel();
         CurrentRoomActive.SetActive(false);
+
         ChatController.manage.Disconnect();
     }
 
@@ -422,11 +516,12 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     {
         Debug.Log("You failed to join a room" + message);
     }
-
+    
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
     {
-        Debug.Log(PhotonNetwork.CurrentRoom.CustomProperties["RANG"].ToString());
+        Debug.Log("OnRoomPropertiesUpdate");
         
+
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
@@ -447,9 +542,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         
-        Debug.Log("Another player has joined room" + newPlayer.UserId);
-        playerCustomProperties["Role"] = UnityEngine.Random.Range(1, 2);
-        PhotonNetwork.LocalPlayer.CustomProperties = playerCustomProperties;
+        Debug.Log("Another player has joined room" + newPlayer.NickName);
         Instantiate(playersListItemPrefab, playersListContent).GetComponent<PlayersItem>().SetUp(newPlayer);
         currPlayersInRoom.text = PhotonNetwork.PlayerList.Length.ToString();
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers)
@@ -459,11 +552,16 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
         
     }
 
+
+
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        Debug.Log("Another player has joined room" + otherPlayer.UserId);
+        Debug.Log("Another player has left room" + otherPlayer.NickName);
         isLastPlayerConnected = false;
         curr = 25f;
+        print(PhotonNetwork.CurrentRoom.MaxPlayers);
+        print(PhotonNetwork.CurrentRoom.PlayerCount);
+        print(isNotEnougPlayersInRoom);
         if (PhotonNetwork.CurrentRoom.PlayerCount != PhotonNetwork.CurrentRoom.MaxPlayers)
         {
             isStartGame = false;
@@ -473,6 +571,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
             isDayEnd = false;
             isMafiaTimeToKill = false;
             isMafiaTimeToKillEnd = false;
+            print("isMafiaTimeToKillEndFalse");
             foreach (Transform trans in GameContent)
             {
                 Destroy(trans.gameObject);
@@ -485,7 +584,7 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
 
     public override void OnMasterClientSwitched(Player newMasterClient)
     {
-        Debug.Log("New master client" + newMasterClient.UserId);
+        Debug.Log("New master client" + newMasterClient.NickName);
     }
 
     public override void OnDisconnected(DisconnectCause cause)
@@ -500,7 +599,6 @@ public class PhotonConnector : MonoBehaviourPunCallbacks
 
     #endregion
 
-    #endregion
 
 
 

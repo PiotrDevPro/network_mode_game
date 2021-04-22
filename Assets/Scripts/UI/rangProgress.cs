@@ -8,10 +8,6 @@ public class rangProgress : MonoBehaviour
     public Image fillRang;
     public Text progress;
 
-    private void Start()
-    {
-        
-    }
 
     private void Update()
     {
